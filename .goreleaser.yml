@@ -1,0 +1,97 @@
+# GoReleaser configuration
+project_name: swagger-to-http-file
+
+# Build configurations
+builds:
+  - main: ./cmd/swagger-to-http-file
+    binary: swagger-to-http-file
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+    flags:
+      - -trimpath
+
+# Archive configurations
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    replacements:
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+    files:
+      - README.md
+      - LICENSE
+
+# Checksum configuration
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+# Changelog configuration
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+
+# Snapshot configuration
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+# Release configuration
+release:
+  github:
+    owner: edgardnogueira
+    name: swagger-to-http-file
+  prerelease: auto
+  draft: false
+  name_template: "{{ .ProjectName }} v{{ .Version }}"
+
+# Homebrew configuration
+brews:
+  - name: swagger-to-http-file
+    tap:
+      owner: edgardnogueira
+      name: homebrew-tap
+    folder: Formula
+    description: "A CLI tool that converts Swagger/OpenAPI JSON documents into .http files for easy API testing"
+    homepage: "https://github.com/edgardnogueira/swagger-to-http-file"
+    license: "MIT"
+    test: |
+      system "#{bin}/swagger-to-http-file version"
+    install: |
+      bin.install "swagger-to-http-file"
+
+# Docker configuration
+dockers:
+  - image_templates:
+      - "edgardnogueira/swagger-to-http-file:{{ .Version }}"
+      - "edgardnogueira/swagger-to-http-file:latest"
+    dockerfile: Dockerfile.goreleaser
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+    skip_push: auto

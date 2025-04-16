@@ -1,0 +1,27 @@
+FROM alpine:3.19
+
+# Add CA certificates and create a non-root user
+RUN apk --no-cache add ca-certificates && \
+    addgroup -S appgroup && \
+    adduser -S appuser -G appgroup
+
+# Copy the pre-built binary
+COPY swagger-to-http-file /usr/local/bin/
+
+# Set working directory
+WORKDIR /app
+
+# Switch to non-root user
+USER appuser
+
+# Set entrypoint
+ENTRYPOINT ["swagger-to-http-file"]
+
+# Default command
+CMD ["--help"]
+
+# Metadata
+LABEL org.opencontainers.image.title="Swagger to HTTP File Converter"
+LABEL org.opencontainers.image.description="A CLI tool that converts Swagger/OpenAPI JSON documents into .http files for easy API testing"
+LABEL org.opencontainers.image.source="https://github.com/edgardnogueira/swagger-to-http-file"
+LABEL org.opencontainers.image.licenses="MIT"
