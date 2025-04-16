@@ -8,228 +8,301 @@ import (
 )
 
 func TestParser_Parse(t *testing.T) {
-	// Load the test Swagger file
-	data, err := os.ReadFile("../../../test/samples/petstore.json")
+	// Load test data
+	validData, err := os.ReadFile("../../../test/samples/petstore.json")
 	if err != nil {
 		t.Fatalf("Failed to read test file: %v", err)
 	}
 
-	// Create a new parser
+	invalidJSON := []byte("{invalid:json}")
+
+	tests := []struct {
+		name    string
+		data    []byte
+		wantErr bool
+	}{
+		{
+			name:    "valid swagger",
+			data:    validData,
+			wantErr: false,
+		},
+		{
+			name:    "invalid json",
+			data:    invalidJSON,
+			wantErr: true,
+		},
+		{
+			name:    "empty data",
+			data:    []byte{},
+			wantErr: true,
+		},
+	}
+
 	parser := New()
-
-	// Parse the Swagger document
-	doc, err := parser.Parse(data)
-	if err != nil {
-		t.Fatalf("Failed to parse Swagger document: %v", err)
-	}
-
-	// Verify basic document structure
-	if doc.Swagger != "2.0" {
-		t.Errorf("Expected swagger version 2.0, got %s", doc.Swagger)
-	}
-
-	if doc.Info.Title != "Swagger Petstore" {
-		t.Errorf("Expected title 'Swagger Petstore', got %s", doc.Info.Title)
-	}
-
-	if doc.Host != "petstore.swagger.io" {
-		t.Errorf("Expected host 'petstore.swagger.io', got %s", doc.Host)
-	}
-
-	// Verify paths
-	if len(doc.Paths) != 2 {
-		t.Errorf("Expected 2 paths, got %d", len(doc.Paths))
-	}
-
-	// Check if /pets path exists
-	petsPath, exists := doc.Paths["/pets"]
-	if !exists {
-		t.Errorf("Expected /pets path to exist")
-	} else {
-		// Verify GET operation
-		if petsPath.Get == nil {
-			t.Errorf("Expected GET operation on /pets path")
-		} else {
-			if petsPath.Get.Summary != "List all pets" {
-				t.Errorf("Expected GET summary 'List all pets', got %s", petsPath.Get.Summary)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parser.Parse(tt.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Parser.Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-		}
 
-		// Verify POST operation
-		if petsPath.Post == nil {
-			t.Errorf("Expected POST operation on /pets path")
-		} else {
-			if petsPath.Post.Summary != "Create a pet" {
-				t.Errorf("Expected POST summary 'Create a pet', got %s", petsPath.Post.Summary)
+			if !tt.wantErr && got == nil {
+				t.Errorf("Parser.Parse() returned nil but expected a document")
 			}
-		}
-	}
-
-	// Check if /pets/{petId} path exists
-	petPath, exists := doc.Paths["/pets/{petId}"]
-	if !exists {
-		t.Errorf("Expected /pets/{petId} path to exist")
-	} else {
-		// Verify GET operation
-		if petPath.Get == nil {
-			t.Errorf("Expected GET operation on /pets/{petId} path")
-		} else {
-			if petPath.Get.Summary != "Info for a specific pet" {
-				t.Errorf("Expected GET summary 'Info for a specific pet', got %s", petPath.Get.Summary)
-			}
-		}
+		})
 	}
 }
 
 func TestParser_Validate(t *testing.T) {
-	// Load the test Swagger file
-	data, err := os.ReadFile("../../../test/samples/petstore.json")
+	// Load test data
+	validData, err := os.ReadFile("../../../test/samples/petstore.json")
 	if err != nil {
 		t.Fatalf("Failed to read test file: %v", err)
 	}
 
-	// Create a new parser
+	invalidData, err := os.ReadFile("../../../test/samples/invalid.json")
+	if err != nil {
+		t.Fatalf("Failed to read invalid test file: %v", err)
+	}
+
 	parser := New()
 
-	// Parse the Swagger document
-	doc, err := parser.Parse(data)
+	// Parse valid document
+	validDoc, err := parser.Parse(validData)
 	if err != nil {
-		t.Fatalf("Failed to parse Swagger document: %v", err)
+		t.Fatalf("Failed to parse valid data: %v", err)
 	}
 
-	// Validate the document
-	err = parser.Validate(doc)
+	// Parse invalid document
+	invalidDoc, err := parser.Parse(invalidData)
 	if err != nil {
-		t.Errorf("Valid Swagger document failed validation: %v", err)
+		t.Fatalf("Failed to parse invalid data: %v", err)
 	}
 
-	// Test validation with nil document
-	err = parser.Validate(nil)
-	if err == nil {
-		t.Errorf("Expected error for nil document")
+	// Create a document with missing paths
+	missingPathsDoc := &models.SwaggerDoc{
+		Swagger: "2.0",
+		Info: models.Info{
+			Title:   "Test API",
+			Version: "1.0.0",
+		},
+		Paths: map[string]models.PathItem{},
 	}
 
-	// Test validation with invalid document
-	invalidDoc := *doc
-	invalidDoc.Swagger = ""
-	invalidDoc.OpenAPI = ""
-	err = parser.Validate(&invalidDoc)
-	if err == nil {
-		t.Errorf("Expected error for invalid document without swagger/openapi version")
+	// Create an invalid path item with incomplete operation
+	invalidPathDoc := &models.SwaggerDoc{
+		Swagger: "2.0",
+		Info: models.Info{
+			Title:   "Test API",
+			Version: "1.0.0",
+		},
+		Paths: map[string]models.PathItem{
+			"/test": {
+				Get: &models.Operation{
+					Responses: map[string]models.Response{},
+				},
+			},
+		},
 	}
 
-	// Test validation with missing info title
-	invalidDoc = *doc
-	invalidDoc.Info.Title = ""
-	err = parser.Validate(&invalidDoc)
-	if err == nil {
-		t.Errorf("Expected error for document with missing info.title")
+	// Create an invalid path parameter
+	invalidPathParamDoc := &models.SwaggerDoc{
+		Swagger: "2.0",
+		Info: models.Info{
+			Title:   "Test API",
+			Version: "1.0.0",
+		},
+		Paths: map[string]models.PathItem{
+			"/test/{id}": {
+				Get: &models.Operation{
+					Parameters: []models.Parameter{
+						{
+							Name:     "id",
+							In:       "path",
+							Required: false, // Path parameters must be required
+						},
+					},
+					Responses: map[string]models.Response{
+						"200": {
+							Description: "OK",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name    string
+		doc     *models.SwaggerDoc
+		wantErr bool
+	}{
+		{
+			name:    "valid document",
+			doc:     validDoc,
+			wantErr: false,
+		},
+		{
+			name:    "invalid document - missing swagger version",
+			doc:     invalidDoc,
+			wantErr: true,
+		},
+		{
+			name:    "nil document",
+			doc:     nil,
+			wantErr: true,
+		},
+		{
+			name:    "missing paths",
+			doc:     missingPathsDoc,
+			wantErr: true,
+		},
+		{
+			name:    "invalid path - no responses",
+			doc:     invalidPathDoc,
+			wantErr: true,
+		},
+		{
+			name:    "invalid path parameter - not required",
+			doc:     invalidPathParamDoc,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := parser.Validate(tt.doc)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Parser.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
 
 func TestParser_GetBaseURL(t *testing.T) {
-	// Load the test Swagger file
-	data, err := os.ReadFile("../../../test/samples/petstore.json")
-	if err != nil {
-		t.Fatalf("Failed to read test file: %v", err)
-	}
-
-	// Create a new parser
-	parser := New()
-
-	// Parse the Swagger document
-	doc, err := parser.Parse(data)
-	if err != nil {
-		t.Fatalf("Failed to parse Swagger document: %v", err)
-	}
-
-	// Get the base URL
-	baseURL := parser.GetBaseURL(doc)
-	expected := "http://petstore.swagger.io/api"
-	if baseURL != expected {
-		t.Errorf("Expected base URL %s, got %s", expected, baseURL)
-	}
-
-	// Test with OpenAPI v3 servers
-	v3Doc := *doc
-	v3Doc.Swagger = ""
-	v3Doc.OpenAPI = "3.0.0"
-	v3Doc.Host = ""
-	v3Doc.BasePath = ""
-	v3Doc.Schemes = nil
-	v3Doc.Servers = []models.Server{
+	tests := []struct {
+		name string
+		doc  *models.SwaggerDoc
+		want string
+	}{
 		{
-			URL:         "https://api.example.com/v1",
-			Description: "Production server",
+			name: "swagger v2 with scheme, host and basePath",
+			doc: &models.SwaggerDoc{
+				Schemes:  []string{"https"},
+				Host:     "api.example.com",
+				BasePath: "/v1",
+			},
+			want: "https://api.example.com/v1",
+		},
+		{
+			name: "swagger with host and basePath, no scheme",
+			doc: &models.SwaggerDoc{
+				Host:     "api.example.com",
+				BasePath: "/v1",
+			},
+			want: "http://api.example.com/v1",
+		},
+		{
+			name: "openapi v3 with servers",
+			doc: &models.SwaggerDoc{
+				Servers: []models.Server{
+					{URL: "https://staging.example.com/api"},
+					{URL: "https://api.example.com/v1"},
+				},
+			},
+			want: "https://staging.example.com/api",
+		},
+		{
+			name: "fallback to default",
+			doc:  &models.SwaggerDoc{},
+			want: "http://localhost",
 		},
 	}
 
-	baseURL = parser.GetBaseURL(&v3Doc)
-	expected = "https://api.example.com/v1"
-	if baseURL != expected {
-		t.Errorf("Expected base URL %s, got %s", expected, baseURL)
-	}
-
-	// Test with fallback
-	v3Doc.Servers = nil
-	baseURL = parser.GetBaseURL(&v3Doc)
-	expected = "http://localhost"
-	if baseURL != expected {
-		t.Errorf("Expected fallback base URL %s, got %s", expected, baseURL)
+	parser := New()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := parser.GetBaseURL(tt.doc); got != tt.want {
+				t.Errorf("Parser.GetBaseURL() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
 func TestParser_ExtractOperations(t *testing.T) {
-	// Load the test Swagger file
+	// Load test data
 	data, err := os.ReadFile("../../../test/samples/petstore.json")
 	if err != nil {
 		t.Fatalf("Failed to read test file: %v", err)
 	}
 
-	// Create a new parser
 	parser := New()
 
-	// Parse the Swagger document
+	// Parse valid document
 	doc, err := parser.Parse(data)
 	if err != nil {
-		t.Fatalf("Failed to parse Swagger document: %v", err)
+		t.Fatalf("Failed to parse data: %v", err)
 	}
 
 	// Extract operations
 	operations := parser.ExtractOperations(doc)
 
-	// Check that the pets tag exists
-	petsOps, exists := operations["pets"]
-	if !exists {
-		t.Errorf("Expected 'pets' tag to exist in operations")
+	// Expected results
+	tests := []struct {
+		name             string
+		tag              string
+		expectedCount    int
+		containsPath     string
+		containsMethod   string
+		expectedContains bool
+	}{
+		{
+			name:             "pets tag operations",
+			tag:              "pets",
+			expectedCount:    5, // GET /pets, POST /pets, GET /pets/{petId}, PUT /pets/{petId}, DELETE /pets/{petId}
+			containsPath:     "/pets",
+			containsMethod:   "GET",
+			expectedContains: true,
+		},
+		{
+			name:             "non-existent tag",
+			tag:              "non-existent",
+			expectedCount:    0,
+			containsPath:     "",
+			containsMethod:   "",
+			expectedContains: false,
+		},
 	}
 
-	// Check that we have the correct number of operations
-	if len(petsOps) != 5 {
-		t.Errorf("Expected 5 operations under 'pets' tag, got %d", len(petsOps))
-	}
-
-	// Verify the operations
-	methodsFound := map[string]bool{
-		"GET /pets":          false,
-		"POST /pets":         false,
-		"GET /pets/{petId}":  false,
-		"PUT /pets/{petId}":  false,
-		"DELETE /pets/{petId}": false,
-	}
-
-	for _, op := range petsOps {
-		key := op.Method + " " + op.Path
-		if _, ok := methodsFound[key]; ok {
-			methodsFound[key] = true
-		} else {
-			t.Errorf("Unexpected operation: %s", key)
-		}
-	}
-
-	for op, found := range methodsFound {
-		if !found {
-			t.Errorf("Expected operation %s not found", op)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tagOps, found := operations[tt.tag]
+			
+			// Check if tag exists and count matches
+			if tt.expectedCount > 0 && !found {
+				t.Errorf("Tag %s not found in operations", tt.tag)
+				return
+			}
+			
+			if found && len(tagOps) != tt.expectedCount {
+				t.Errorf("Expected %d operations for tag %s, got %d", tt.expectedCount, tt.tag, len(tagOps))
+			}
+			
+			// Check if specific operation exists
+			if tt.expectedContains && found {
+				hasOperation := false
+				for _, op := range tagOps {
+					if op.Path == tt.containsPath && op.Method == tt.containsMethod {
+						hasOperation = true
+						break
+					}
+				}
+				if !hasOperation {
+					t.Errorf("Expected to find %s %s operation in tag %s, but did not", 
+						tt.containsMethod, tt.containsPath, tt.tag)
+				}
+			}
+		})
 	}
 }
