@@ -3,6 +3,8 @@ package swagger
 import (
 	"os"
 	"testing"
+
+	"github.com/edgardnogueira/swagger-to-http-file/internal/domain/models"
 )
 
 func TestParser_Parse(t *testing.T) {
@@ -155,15 +157,7 @@ func TestParser_GetBaseURL(t *testing.T) {
 	v3Doc.Host = ""
 	v3Doc.BasePath = ""
 	v3Doc.Schemes = nil
-	v3Doc.Servers = []struct {
-		URL         string                    `json:"url"`
-		Description string                    `json:"description,omitempty"`
-		Variables   map[string]struct {
-			Enum        []string `json:"enum,omitempty"`
-			Default     string   `json:"default"`
-			Description string   `json:"description,omitempty"`
-		} `json:"variables,omitempty"`
-	}{
+	v3Doc.Servers = []models.Server{
 		{
 			URL:         "https://api.example.com/v1",
 			Description: "Production server",
