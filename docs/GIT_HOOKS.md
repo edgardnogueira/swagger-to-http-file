@@ -107,62 +107,77 @@ You can add the following step to your CI/CD pipeline to ensure HTTP files are u
     fi
 ```
 
-## Integration with NPM Projects
+## NPM Integration
 
-For Node.js projects, you can integrate the tool with your npm workflow:
-
-1. Add the following scripts to your `package.json` (see `scripts/examples/package.json.example`):
+For Node.js projects, you can add scripts to your `package.json`:
 
 ```json
-"scripts": {
-  "swagger:convert": "swagger-to-http-file -i ./api/swagger.json -o ./http -w",
-  "swagger:watch": "nodemon --watch ./api --ext json,yaml,yml --exec 'npm run swagger:convert'"
+{
+  "scripts": {
+    "swagger:convert": "swagger-to-http-file -i ./api/swagger.json -o ./http -w",
+    "swagger:watch": "nodemon --watch ./api --ext json,yaml,yml --exec 'npm run swagger:convert'"
+  }
 }
 ```
 
-2. Install required dependencies:
+This allows you to:
+- Run `npm run swagger:convert` to manually convert files
+- Run `npm run swagger:watch` to automatically convert files when they change
 
-```bash
-npm install --save-dev nodemon
-```
-
-3. Run the watch script during development:
-
-```bash
-npm run swagger:watch
-```
-
-This will automatically detect changes to your Swagger files and update the HTTP files accordingly.
+See `scripts/examples/package.json.example` for a complete example.
 
 ## Troubleshooting
 
-### Hooks Not Running
+### Hooks not running
 
-- Make sure the hooks are executable: `chmod +x .git/hooks/pre-commit .git/hooks/post-checkout`
-- Check if hooks are skipped: `unset SWAGGER_TO_HTTP_SKIP_HOOKS`
-- Verify that the `swagger-to-http-file` command is in your PATH
+- Make sure hooks are executable: `chmod +x .git/hooks/pre-commit .git/hooks/post-checkout`
+- Check if environment variables are set: `echo $SWAGGER_TO_HTTP_SKIP_HOOKS`
+- Verify the tool is installed: `which swagger-to-http-file`
 
-### HTTP Files Not Updated
+### HTTP files not updating
 
-- Run the tool manually to check for errors: `swagger-to-http-file -i your-file.json -v`
-- Check the output directory permissions
-- Make sure the Swagger file is valid: `swagger-to-http-file -i your-file.json -v`
+- Run the script manually to see errors: `./scripts/detect-swagger-changes.sh -v`
+- Check file permissions in the output directory
+- Try with explicit paths: `swagger-to-http-file -i /path/to/swagger.json -o /path/to/output -w -v`
 
-### Adding Hooks to an Existing Project
+## Automatic Setup for Teams
 
-For existing projects with team members, it's best to:
+To ensure everyone on your team has the hooks set up, you can:
 
-1. Document the hook setup in your README
-2. Include the hook installation in your onboarding process
-3. Consider adding a CI/CD check to ensure HTTP files are up to date
+1. Add the hook installation to your project's setup script:
+   ```bash
+   # Add to your setup script
+   ./scripts/install-hooks.sh
+   ```
 
-## Further Customization
+2. Add a git hook check to your CI pipeline:
+   ```yaml
+   - name: Check Git hooks
+     run: |
+       if [ ! -x .git/hooks/pre-commit ]; then
+         echo "ERROR: Git hooks not installed. Run ./scripts/install-hooks.sh"
+         exit 1
+       fi
+   ```
 
-You can customize the hook scripts in `.git/hooks/` or your Husky configuration to:
+3. Document the requirement in your README.md
 
-- Filter specific files or directories
-- Run additional checks or transformations
-- Change the output directory structure
-- Integrate with other tools in your workflow
+## Under the Hood
 
-For more details, see the [Git Hooks documentation](https://git-scm.com/docs/githooks).
+The Git hooks in this project use the following techniques:
+
+- They detect changes using `git diff` commands
+- They run the `swagger-to-http-file` command with appropriate flags
+- Pre-commit hooks use `git add` to include generated files
+- Post-checkout hooks compare previous and new branch contents
+
+To view the hook scripts, look in the `scripts/hooks/` directory.
+
+## Advanced Configuration
+
+For advanced configuration, you can modify the hook scripts directly:
+
+- Pre-commit hook: `.git/hooks/pre-commit`
+- Post-checkout hook: `.git/hooks/post-checkout`
+
+Remember to re-run the installation script after making changes to the templates.
