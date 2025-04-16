@@ -107,79 +107,65 @@ You can add the following step to your CI/CD pipeline to ensure HTTP files are u
     fi
 ```
 
-## Integration with NPM Scripts
+## Integration with npm Projects
 
-For Node.js projects, you can add the following NPM scripts to your `package.json`:
+For Node.js projects, you can use the provided example `package.json` configuration:
 
-```json
-{
-  "scripts": {
-    "swagger:convert": "swagger-to-http-file -i ./api/swagger.json -o ./http -w",
-    "swagger:watch": "nodemon --watch ./api --ext json,yaml,yml --exec 'npm run swagger:convert'"
-  }
-}
-```
+1. Copy the relevant parts from `scripts/examples/package.json.example` to your `package.json`
+2. Install the necessary dependencies:
+   ```bash
+   npm install --save-dev husky nodemon
+   ```
 
-Then you can run:
-
-```bash
-# Convert Swagger files once
-npm run swagger:convert
-
-# Watch for changes and convert automatically
-npm run swagger:watch
-```
-
-See the example `package.json` in `scripts/examples/package.json.example`.
+3. This adds the following npm scripts:
+   - `npm run swagger:convert`: Run a one-time conversion
+   - `npm run swagger:watch`: Watch for changes and convert automatically
 
 ## Troubleshooting
 
-### Hooks not running
+### Hooks Not Running
 
-If hooks are not running, check:
-
-1. Ensure the hooks are executable:
+1. Make sure the hooks are executable:
    ```bash
    chmod +x .git/hooks/pre-commit .git/hooks/post-checkout
    ```
 
-2. Ensure `swagger-to-http-file` is installed and in your PATH:
+2. Check if hooks are being skipped:
+   ```bash
+   # Make sure this environment variable is not set
+   unset SWAGGER_TO_HTTP_SKIP_HOOKS
+   ```
+
+3. Verify the tool is installed and in your PATH:
    ```bash
    which swagger-to-http-file
    ```
 
-3. Check if hooks are being skipped due to the environment variable:
+### HTTP Files Not Updated
+
+1. Run the detection script with verbose output:
    ```bash
-   unset SWAGGER_TO_HTTP_SKIP_HOOKS
+   ./scripts/detect-swagger-changes.sh -v
    ```
 
-### HTTP files not updated
-
-If HTTP files are not being updated, check:
-
-1. Ensure your Swagger files are valid:
+2. Check if your Swagger files are detected:
    ```bash
-   swagger-to-http-file -i your-file.json -v
+   find . -name "*.json" -o -name "*.yaml" -o -name "*.yml"
    ```
 
-2. Try running the conversion manually:
+3. Try running the conversion manually:
    ```bash
-   swagger-to-http-file -i your-file.json -o output-dir -w -v
-   ```
-
-3. Check for file permission issues:
-   ```bash
-   ls -la output-dir
+   swagger-to-http-file -i path/to/swagger.json -o output/dir -w -v
    ```
 
 ## Best Practices
 
-1. **Include HTTP files in version control** to allow for easy API testing by team members.
+1. **Commit Swagger and HTTP files together**: This maintains a clear history of API changes.
 
-2. **Use a consistent directory structure** for Swagger files and HTTP files.
+2. **Include HTTP files in version control**: This allows team members to use them without installing the tool.
 
-3. **Use Git hooks in all development environments** to ensure consistency.
+3. **Configure output directories consistently**: Use the same output directory across your team.
 
-4. **Include validation in your CI/CD pipeline** to catch issues early.
+4. **Set up CI checks**: Ensure HTTP files are always in sync with Swagger files.
 
-5. **Document API changes** in both Swagger files and commit messages.
+5. **Document your setup**: Include a note in your project README about the Git hooks setup.
