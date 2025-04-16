@@ -111,7 +111,7 @@ Accept: application/json
 
 This project follows Clean Architecture principles and is developed in Go.
 
-Project structure:
+### Project Structure
 
 ```
 swagger-to-http-file/
@@ -122,9 +122,52 @@ swagger-to-http-file/
 │   ├── application/          # Application layer
 │   ├── adapters/             # Adapter layer
 │   └── infrastructure/       # Infrastructure layer
-└── docs/                     # Documentation
+├── docs/                     # Documentation
+└── test/                     # Test files and samples
 ```
+
+### Building from Source
+
+The project uses a Makefile to simplify common development tasks:
+
+```bash
+# Build the binary
+make build
+
+# Run tests
+make test
+
+# Format code
+make fmt
+
+# Check for linting issues
+make lint
+
+# Run with an example input
+make run
+```
+
+### Docker
+
+You can build and run the project with Docker:
+
+```bash
+# Build the Docker image
+docker build -t swagger-to-http-file .
+
+# Run the container
+docker run --rm -v $(pwd):/data swagger-to-http-file -i /data/swagger.json -o /data
+```
+
+### CI/CD
+
+The project uses GitHub Actions for:
+- Running tests and linting on every pull request
+- Building and releasing binaries for multiple platforms
+- Publishing Docker images
+
+See the [Contributing Guide](CONTRIBUTING.md) for information on how to contribute to the project.
 
 ## License
 
-MIT
+[MIT](LICENSE)
