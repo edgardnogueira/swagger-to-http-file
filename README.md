@@ -10,6 +10,7 @@ A command-line tool that converts Swagger/OpenAPI JSON documents into `.http` fi
 - Support for path, query, and body parameters
 - Support for authentication mechanisms
 - Group requests by tags into separate files
+- Git hooks for automatic HTTP file updates when Swagger files change
 
 ## Installation
 
@@ -107,6 +108,25 @@ GET {{baseUrl}}/pets/{{petId}}
 Accept: application/json
 ```
 
+## Git Hooks Integration
+
+The tool provides Git hooks for automatically updating HTTP files when Swagger/OpenAPI files change:
+
+- **Pre-commit hook**: Automatically updates HTTP files when Swagger files are committed
+- **Post-checkout hook**: Updates HTTP files when switching branches
+
+To install the Git hooks:
+
+```bash
+# Make the script executable
+chmod +x scripts/install-hooks.sh
+
+# Run the installation script
+./scripts/install-hooks.sh
+```
+
+For more details, see the [Git Hooks Documentation](docs/GIT_HOOKS.md).
+
 ## Development
 
 This project follows Clean Architecture principles and is developed in Go.
@@ -145,6 +165,9 @@ make lint
 
 # Run with an example input
 make run
+
+# Install Git hooks
+make hooks
 ```
 
 ### Docker

@@ -1,0 +1,21 @@
+{
+  "name": "my-api-project",
+  "version": "1.0.0",
+  "description": "A project with Swagger to HTTP integration",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "swagger:convert": "swagger-to-http-file -i ./api/swagger.json -o ./http -w",
+    "swagger:watch": "nodemon --watch ./api --ext json,yaml,yml --exec 'npm run swagger:convert'"
+  },
+  "keywords": [
+    "swagger",
+    "openapi",
+    "http",
+    "api"
+  ],
+  "devDependencies": {
+    "husky": "^8.0.0",
+    "nodemon": "^2.0.22"
+  }
+}

@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# Post-checkout Git hook for swagger-to-http-file
+#
+# This hook:
+# 1. Checks if any Swagger/OpenAPI files have changed between branches
+# 2. If so, runs swagger-to-http-file to update the corresponding HTTP files
+
+# Exit on silent errors
+set -e
+
+# Skip hooks if environment variable is set
+if [ -n "$SWAGGER_TO_HTTP_SKIP_HOOKS" ]; then
+  echo "Skipping Swagger-to-HTTP hooks (SWAGGER_TO_HTTP_SKIP_HOOKS is set)"
+  exit 0
+fi
+
+# Arguments provided by Git
+PREV_HEAD="$1"
+NEW_HEAD="$2"
+CHECKOUT_TYPE="$3"  # 1=file checkout, 0=branch checkout
+
+# Only run on branch checkout
+if [ "$CHECKOUT_TYPE" != "1" ]; then
+  # Check if swagger-to-http-file is installed
+  if ! command -v swagger-to-http-file &> /dev/null; then
+    echo "Warning: swagger-to-http-file not found in PATH. Skipping HTTP file generation."
+    echo "To install: go install github.com/edgardnogueira/swagger-to-http-file/cmd/swagger-to-http-file@latest"
+    exit 0
+  fi
+
+  # Set default values
+  OUTPUT_DIR="${SWAGGER_TO_HTTP_OUTPUT_DIR:-.}"
+  DEFAULT_PATTERNS=( "*.json" "*.yaml" "*.yml" )
+  GIT_ROOT="$(git rev-parse --show-toplevel)"
+
+  # Get changed Swagger/OpenAPI files between branches
+  get_changed_swagger_files() {
+    # If specific files are specified, use them
+    if [ -n "$SWAGGER_TO_HTTP_FILES" ]; then
+      echo "$SWAGGER_TO_HTTP_FILES"
+      return
+    fi
+
+    # Otherwise, look for files matching patterns that changed between branches
+    for pattern in "${DEFAULT_PATTERNS[@]}"; do
+      git diff --name-only "$PREV_HEAD" "$NEW_HEAD" | grep -E "$pattern$" || true
+    done
+  }
+
+  # Convert specific Swagger file to HTTP files
+  convert_swagger_file() {
+    local swagger_file="$1"
+    local output_dir="$2"
+    local full_path="$GIT_ROOT/$swagger_file"
+    
+    if [ ! -f "$full_path" ]; then
+      echo "Warning: $swagger_file does not exist, skipping"
+      return
+    }
+    
+    echo "Converting $swagger_file to HTTP files..."
+    
+    # Determine the output directory based on the Swagger file name if not specified
+    if [ "$output_dir" = "." ]; then
+      local file_dir=$(dirname "$swagger_file")
+      output_dir="$file_dir"
+    fi
+    
+    # Create output directory if it doesn't exist
+    mkdir -p "$GIT_ROOT/$output_dir"
+    
+    # Run the conversion tool
+    swagger-to-http-file -i "$full_path" -o "$GIT_ROOT/$output_dir" -w
+  }
+
+  # Main execution
+  echo "Checking for Swagger/OpenAPI files changes between branches..."
+  swagger_files=$(get_changed_swagger_files)
+
+  if [ -z "$swagger_files" ]; then
+    echo "No Swagger/OpenAPI files changed between branches."
+    exit 0
+  fi
+
+  echo "Found changed Swagger/OpenAPI files:"
+  echo "$swagger_files"
+
+  # Process each Swagger file
+  for file in $swagger_files; do
+    convert_swagger_file "$file" "$OUTPUT_DIR"
+  done
+
+  echo "Swagger to HTTP conversion completed successfully!"
+fi
+
+exit 0

@@ -1,4 +1,4 @@
-.PHONY: build clean test run lint vet fmt help
+.PHONY: build clean test run lint vet fmt help hooks swagger-check
 
 # Build variables
 BINARY_NAME := swagger-to-http-file
@@ -28,18 +28,20 @@ BIN_DIR := ./bin
 # Help text
 help:
 	@echo "Available targets:"
-	@echo "  build      - Build the binary"
-	@echo "  install    - Install the binary locally"
-	@echo "  clean      - Remove build artifacts"
-	@echo "  test       - Run tests"
-	@echo "  coverage   - Run tests with coverage"
-	@echo "  lint       - Run linter (requires golint)"
-	@echo "  vet        - Run go vet"
-	@echo "  fmt        - Run go fmt"
-	@echo "  tidy       - Run go mod tidy"
-	@echo "  release    - Prepare a release (requires goreleaser)"
-	@echo "  docker     - Build Docker image"
-	@echo "  run        - Run the binary with example input"
+	@echo "  build        - Build the binary"
+	@echo "  install      - Install the binary locally"
+	@echo "  clean        - Remove build artifacts"
+	@echo "  test         - Run tests"
+	@echo "  coverage     - Run tests with coverage"
+	@echo "  lint         - Run linter (requires golint)"
+	@echo "  vet          - Run go vet"
+	@echo "  fmt          - Run go fmt"
+	@echo "  tidy         - Run go mod tidy"
+	@echo "  release      - Prepare a release (requires goreleaser)"
+	@echo "  docker       - Build Docker image"
+	@echo "  run          - Run the binary with example input"
+	@echo "  hooks        - Install Git hooks"
+	@echo "  swagger-check - Check for Swagger changes and update HTTP files"
 	@echo ""
 	@echo "Version: $(VERSION)"
 	@echo "Commit: $(COMMIT)"
@@ -114,3 +116,15 @@ run:
 	else \
 		echo "Binary not found. Run 'make build' first."; \
 	fi
+
+# Install Git hooks
+hooks:
+	@echo "Installing Git hooks..."
+	@chmod +x scripts/install-hooks.sh
+	@./scripts/install-hooks.sh
+
+# Check for swagger changes and update HTTP files
+swagger-check:
+	@echo "Checking for Swagger file changes..."
+	@chmod +x scripts/detect-swagger-changes.sh
+	@./scripts/detect-swagger-changes.sh --verbose
