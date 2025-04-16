@@ -109,7 +109,7 @@ You can add the following step to your CI/CD pipeline to ensure HTTP files are u
 
 ## Integration with NPM Scripts
 
-For Node.js projects, you can add the following scripts to your `package.json`:
+For Node.js projects, you can add the following NPM scripts to your `package.json`:
 
 ```json
 {
@@ -120,47 +120,66 @@ For Node.js projects, you can add the following scripts to your `package.json`:
 }
 ```
 
-This allows you to:
-- Run `npm run swagger:convert` to manually convert files
-- Run `npm run swagger:watch` to watch for changes and automatically convert files
+Then you can run:
 
-A complete example `package.json` is available in `scripts/examples/package.json.example`.
+```bash
+# Convert Swagger files once
+npm run swagger:convert
+
+# Watch for changes and convert automatically
+npm run swagger:watch
+```
+
+See the example `package.json` in `scripts/examples/package.json.example`.
 
 ## Troubleshooting
 
-### Hook Not Running
+### Hooks not running
 
-- Make sure the hook files are executable: `chmod +x .git/hooks/pre-commit .git/hooks/post-checkout`
-- Check if `SWAGGER_TO_HTTP_SKIP_HOOKS` is set in your environment
-- Ensure `swagger-to-http-file` is installed and in your PATH
+If hooks are not running, check:
 
-### HTTP Files Not Being Updated
-
-- Run `swagger-to-http-file -i file.json -o output_dir -v -w` manually to see the output
-- Check if the Swagger files are valid by running `swagger-to-http-file -i file.json --validate`
-- Try running the detect script manually: `./scripts/detect-swagger-changes.sh --verbose`
-
-### Conflicts with Other Hooks
-
-If you're using other Git hook systems (like pre-commit, commitlint, etc.), you may need to integrate the Swagger-to-HTTP logic into those hooks. The Husky setup script provides a good example of how to do this.
-
-## Advanced Usage
-
-### Custom File Detection
-
-By default, the hooks look for `.json`, `.yaml`, and `.yml` files. If you need to customize this:
-
-1. Edit the hook scripts in `.git/hooks/` or the Husky scripts
-2. Set the `SWAGGER_TO_HTTP_FILES` environment variable with specific files
-
-### Multiple Output Directories
-
-If you need to generate HTTP files in multiple directories based on the Swagger files:
-
-1. Run the manual script separately for each directory:
+1. Ensure the hooks are executable:
    ```bash
-   ./scripts/detect-swagger-changes.sh -d api/v1 -o http/v1
-   ./scripts/detect-swagger-changes.sh -d api/v2 -o http/v2
+   chmod +x .git/hooks/pre-commit .git/hooks/post-checkout
    ```
 
-2. Or customize the hook scripts to handle multiple directories
+2. Ensure `swagger-to-http-file` is installed and in your PATH:
+   ```bash
+   which swagger-to-http-file
+   ```
+
+3. Check if hooks are being skipped due to the environment variable:
+   ```bash
+   unset SWAGGER_TO_HTTP_SKIP_HOOKS
+   ```
+
+### HTTP files not updated
+
+If HTTP files are not being updated, check:
+
+1. Ensure your Swagger files are valid:
+   ```bash
+   swagger-to-http-file -i your-file.json -v
+   ```
+
+2. Try running the conversion manually:
+   ```bash
+   swagger-to-http-file -i your-file.json -o output-dir -w -v
+   ```
+
+3. Check for file permission issues:
+   ```bash
+   ls -la output-dir
+   ```
+
+## Best Practices
+
+1. **Include HTTP files in version control** to allow for easy API testing by team members.
+
+2. **Use a consistent directory structure** for Swagger files and HTTP files.
+
+3. **Use Git hooks in all development environments** to ensure consistency.
+
+4. **Include validation in your CI/CD pipeline** to catch issues early.
+
+5. **Document API changes** in both Swagger files and commit messages.
