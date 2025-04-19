@@ -75,7 +75,7 @@ jobs:
         run: go build -v -o swagger-to-http-file ./cmd/swagger-to-http-file
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: swagger-to-http-file
           path: ./swagger-to-http-file
