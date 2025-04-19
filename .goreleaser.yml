@@ -69,10 +69,6 @@ release:
   draft: false
   name_template: "{{ .ProjectName }} v{{ .Version }}"
 
-# Homebrew configuration
-brews:
-  - name: swagger-to-http-file
-    disabled: true
 
 # Docker configuration
 dockers:
