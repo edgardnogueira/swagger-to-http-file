@@ -72,17 +72,7 @@ release:
 # Homebrew configuration
 brews:
   - name: swagger-to-http-file
-    tap:
-      owner: edgardnogueira
-      name: homebrew-tap
-    folder: Formula
-    description: "A CLI tool that converts Swagger/OpenAPI JSON documents into .http files for easy API testing"
-    homepage: "https://github.com/edgardnogueira/swagger-to-http-file"
-    license: "MIT"
-    test: |
-      system "#{bin}/swagger-to-http-file version"
-    install: |
-      bin.install "swagger-to-http-file"
+    disabled: true
 
 # Docker configuration
 dockers:
