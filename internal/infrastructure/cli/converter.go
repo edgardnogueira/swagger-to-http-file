@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
+
 	"path/filepath"
 	"strings"
 
@@ -172,9 +172,9 @@ func sanitizeTag(tag string) string {
 	tag = strings.ReplaceAll(tag, "<", "_")
 	tag = strings.ReplaceAll(tag, ">", "_")
 	tag = strings.ReplaceAll(tag, "|", "_")
-	
+
 	// Convert to lowercase for consistency
 	tag = strings.ToLower(tag)
-	
+
 	return tag
 }

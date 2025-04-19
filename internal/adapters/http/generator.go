@@ -1,7 +1,6 @@
 package http
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -177,7 +176,7 @@ func extractHeaders(op models.OperationInfo) map[string]string {
 
 // isBodyParameter checks if a parameter is a body parameter in OpenAPI v3
 func isBodyParameter(param models.Parameter) bool {
-	return param.In == "body" || 
+	return param.In == "body" ||
 		(param.Schema != nil && param.Schema.Type == "object") ||
 		(param.In == "query" && param.Style == "form" && param.Explode)
 }
