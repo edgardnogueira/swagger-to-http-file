@@ -9,8 +9,8 @@ type FileWriter struct {
 	OutputDir string
 }
 
-// WriteHttpFiles writes the HTTP files to the filesystem
-func (fw *FileWriter) WriteHttpFiles(files map[string]*models.HttpFile) error {
+// WriteHTTPFiles writes the HTTP files to the filesystem
+func (fw *FileWriter) WriteHTTPFiles(files map[string]*models.HTTPFile) error {
 	// Will be implemented as part of Issue #3
 	return nil
 }

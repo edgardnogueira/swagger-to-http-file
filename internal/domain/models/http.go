@@ -1,7 +1,7 @@
 package models
 
-// HttpRequest represents a single HTTP request in the .http file format
-type HttpRequest struct {
+// HTTPRequest represents a single HTTP request in the .http file format
+type HTTPRequest struct {
 	Name        string
 	Method      string
 	Path        string
@@ -12,10 +12,10 @@ type HttpRequest struct {
 	Tag         string
 }
 
-// HttpFile represents a collection of HTTP requests to be saved in a .http file
-type HttpFile struct {
-	BaseURL     string
-	GlobalVars  map[string]string
-	Requests    []HttpRequest
-	Tag         string
+// HTTPFile represents a collection of HTTP requests to be saved in a .http file
+type HTTPFile struct {
+	BaseURL    string
+	GlobalVars map[string]string
+	Requests   []HTTPRequest
+	Tag        string
 }

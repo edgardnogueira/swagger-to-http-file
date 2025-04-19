@@ -7,17 +7,17 @@ import (
 	"github.com/edgardnogueira/swagger-to-http-file/internal/domain/models"
 )
 
-func TestFormatter_FormatHttpRequest(t *testing.T) {
+func TestFormatter_FormatHTTPRequest(t *testing.T) {
 	formatter := NewFormatter()
 
 	tests := []struct {
 		name     string
-		request  models.HttpRequest
+		request  models.HTTPRequest
 		expected []string
 	}{
 		{
 			name: "basic GET request",
-			request: models.HttpRequest{
+			request: models.HTTPRequest{
 				Name:   "Get Pets",
 				Method: "GET",
 				Path:   "/pets",
@@ -35,7 +35,7 @@ func TestFormatter_FormatHttpRequest(t *testing.T) {
 		},
 		{
 			name: "POST request with body",
-			request: models.HttpRequest{
+			request: models.HTTPRequest{
 				Name:   "Create Pet",
 				Method: "POST",
 				Path:   "/pets",
@@ -55,7 +55,7 @@ func TestFormatter_FormatHttpRequest(t *testing.T) {
 		},
 		{
 			name: "request with path parameters",
-			request: models.HttpRequest{
+			request: models.HTTPRequest{
 				Name:   "Get Pet by ID",
 				Method: "GET",
 				Path:   "/pets/{{petId}}",
@@ -73,8 +73,8 @@ func TestFormatter_FormatHttpRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := formatter.FormatHttpRequest(tt.request)
-			
+			result := formatter.FormatHTTPRequest(tt.request)
+
 			// Check that all expected strings are in the result
 			for _, expected := range tt.expected {
 				if !strings.Contains(result, expected) {
@@ -85,17 +85,17 @@ func TestFormatter_FormatHttpRequest(t *testing.T) {
 	}
 }
 
-func TestFormatter_FormatHttpFile(t *testing.T) {
+func TestFormatter_FormatHTTPFile(t *testing.T) {
 	formatter := NewFormatter()
 
-	file := &models.HttpFile{
+	file := &models.HTTPFile{
 		BaseURL: "http://api.example.com",
 		GlobalVars: map[string]string{
 			"baseUrl":    "http://api.example.com",
 			"authToken":  "your_auth_token",
 			"apiVersion": "v1",
 		},
-		Requests: []models.HttpRequest{
+		Requests: []models.HTTPRequest{
 			{
 				Name:   "Get All Items",
 				Method: "GET",
@@ -119,7 +119,7 @@ func TestFormatter_FormatHttpFile(t *testing.T) {
 		Tag: "items",
 	}
 
-	result := formatter.FormatHttpFile(file)
+	result := formatter.FormatHTTPFile(file)
 
 	expectedContent := []string{
 		"# Global variables",

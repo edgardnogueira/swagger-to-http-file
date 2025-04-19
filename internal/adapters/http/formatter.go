@@ -11,8 +11,8 @@ import (
 // Formatter handles formatting HTTP files into the .http format
 type Formatter struct{}
 
-// FormatHttpFile formats an HttpFile into a string representation in .http format
-func (f *Formatter) FormatHttpFile(file *models.HttpFile) string {
+// FormatHTTPFile formats an HTTPFile into a string representation in .http format
+func (f *Formatter) FormatHTTPFile(file *models.HTTPFile) string {
 	var builder strings.Builder
 
 	// Add base URL and global variables
@@ -24,15 +24,15 @@ func (f *Formatter) FormatHttpFile(file *models.HttpFile) string {
 		if i > 0 {
 			builder.WriteString("\n")
 		}
-		builder.WriteString(f.FormatHttpRequest(req))
+		builder.WriteString(f.FormatHTTPRequest(req))
 		builder.WriteString("\n")
 	}
 
 	return builder.String()
 }
 
-// FormatHttpRequest formats a single HttpRequest into a string representation
-func (f *Formatter) FormatHttpRequest(req models.HttpRequest) string {
+// FormatHTTPRequest formats a single HTTPRequest into a string representation
+func (f *Formatter) FormatHTTPRequest(req models.HTTPRequest) string {
 	var builder strings.Builder
 
 	// Add request name as a comment
@@ -81,7 +81,7 @@ func (f *Formatter) formatGlobalVars(vars map[string]string) string {
 /*
 // formatNamedRequest formats a request with a name and response capture
 
-	func (f *Formatter) formatNamedRequest(req models.HttpRequest) string {
+	func (f *Formatter) formatNamedRequest(req models.HTTPRequest) string {
 		var builder strings.Builder
 
 		// Add request name as a comment

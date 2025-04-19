@@ -49,7 +49,7 @@ func TestSanitizeTag(t *testing.T) {
 
 func TestExtractGlobalVars(t *testing.T) {
 	// Create test files
-	files := map[string]*models.HttpFile{
+	files := map[string]*models.HTTPFile{
 		"tag1": {
 			GlobalVars: map[string]string{
 				"baseUrl": "http://api1.example.com",
@@ -81,7 +81,7 @@ func TestExtractGlobalVars(t *testing.T) {
 	}
 }
 
-func TestWriteHttpFiles(t *testing.T) {
+func TestWriteHTTPFiles(t *testing.T) {
 	// Create temp directory
 	tempDir, err := os.MkdirTemp("", "swagger-to-http-test")
 	if err != nil {
@@ -90,14 +90,14 @@ func TestWriteHttpFiles(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Create test files
-	httpFiles := map[string]*models.HttpFile{
+	HTTPFiles := map[string]*models.HTTPFile{
 		"pets": {
 			BaseURL: "http://api.example.com",
 			GlobalVars: map[string]string{
 				"baseUrl": "http://api.example.com",
 				"apiKey":  "test-key",
 			},
-			Requests: []models.HttpRequest{
+			Requests: []models.HTTPRequest{
 				{
 					Name:   "Get Pets",
 					Method: "GET",
@@ -111,7 +111,7 @@ func TestWriteHttpFiles(t *testing.T) {
 			GlobalVars: map[string]string{
 				"baseUrl": "http://api.example.com",
 			},
-			Requests: []models.HttpRequest{
+			Requests: []models.HTTPRequest{
 				{
 					Name:   "Get Users",
 					Method: "GET",
@@ -133,9 +133,9 @@ func TestWriteHttpFiles(t *testing.T) {
 			t.Fatalf("Failed to create test directory: %v", err)
 		}
 
-		err = writeHttpFiles(httpFiles, dir, formatter, true, true, false)
+		err = WriteHTTPFiles(HTTPFiles, dir, formatter, true, true, false)
 		if err != nil {
-			t.Fatalf("writeHttpFiles failed: %v", err)
+			t.Fatalf("WriteHTTPFiles failed: %v", err)
 		}
 
 		// Check if files were created
@@ -168,9 +168,9 @@ func TestWriteHttpFiles(t *testing.T) {
 			t.Fatalf("Failed to create test directory: %v", err)
 		}
 
-		err = writeHttpFiles(httpFiles, dir, formatter, false, true, false)
+		err = WriteHTTPFiles(HTTPFiles, dir, formatter, false, true, false)
 		if err != nil {
-			t.Fatalf("writeHttpFiles failed: %v", err)
+			t.Fatalf("WriteHTTPFiles failed: %v", err)
 		}
 
 		// Check if file was created
@@ -204,9 +204,9 @@ func TestWriteHttpFiles(t *testing.T) {
 		}
 
 		// First run with overwrite=false
-		err = writeHttpFiles(httpFiles, dir, formatter, true, false, false)
+		err = WriteHTTPFiles(HTTPFiles, dir, formatter, true, false, false)
 		if err != nil {
-			t.Fatalf("writeHttpFiles failed: %v", err)
+			t.Fatalf("WriteHTTPFiles failed: %v", err)
 		}
 
 		// Check content (should still be original)
@@ -218,9 +218,9 @@ func TestWriteHttpFiles(t *testing.T) {
 		}
 
 		// Run with overwrite=true
-		err = writeHttpFiles(httpFiles, dir, formatter, true, true, false)
+		err = WriteHTTPFiles(HTTPFiles, dir, formatter, true, true, false)
 		if err != nil {
-			t.Fatalf("writeHttpFiles failed: %v", err)
+			t.Fatalf("WriteHTTPFiles failed: %v", err)
 		}
 
 		// Check content (should be updated)

@@ -12,8 +12,8 @@ import (
 	"github.com/edgardnogueira/swagger-to-http-file/internal/domain/models"
 )
 
-// convertSwaggerToHttp converts a Swagger file to HTTP files
-func convertSwaggerToHttp(inputFile, outputDir, baseURLOverride string, groupByTag, overwrite, verbose bool) error {
+// convertSwaggerToHTTP converts a Swagger file to HTTP files
+func convertSwaggerToHTTP(inputFile, outputDir, baseURLOverride string, groupByTag, overwrite, verbose bool) error {
 	// Read the Swagger file
 	if verbose {
 		fmt.Printf("Reading Swagger file: %s\n", inputFile)
@@ -56,7 +56,7 @@ func convertSwaggerToHttp(inputFile, outputDir, baseURLOverride string, groupByT
 	}
 
 	generator := http.New(parser)
-	httpFiles, err := generator.Generate(doc, baseURL)
+	HTTPFiles, err := generator.Generate(doc, baseURL)
 	if err != nil {
 		return fmt.Errorf("failed to generate HTTP files: %v", err)
 	}
@@ -67,11 +67,11 @@ func convertSwaggerToHttp(inputFile, outputDir, baseURLOverride string, groupByT
 	}
 
 	formatter := http.NewFormatter()
-	return writeHttpFiles(httpFiles, outputDir, formatter, groupByTag, overwrite, verbose)
+	return WriteHTTPFiles(HTTPFiles, outputDir, formatter, groupByTag, overwrite, verbose)
 }
 
-// writeHttpFiles writes the HTTP files to disk
-func writeHttpFiles(files map[string]*models.HttpFile, outputDir string, formatter *http.Formatter, groupByTag, overwrite, verbose bool) error {
+// WriteHTTPFiles writes the HTTP files to disk
+func WriteHTTPFiles(files map[string]*models.HTTPFile, outputDir string, formatter *http.Formatter, groupByTag, overwrite, verbose bool) error {
 	if groupByTag {
 		// Write each tag to a separate file
 		for tag, file := range files {
@@ -87,7 +87,7 @@ func writeHttpFiles(files map[string]*models.HttpFile, outputDir string, formatt
 			}
 
 			// Format the file content
-			content := formatter.FormatHttpFile(file)
+			content := formatter.FormatHTTPFile(file)
 
 			// Write the file
 			if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
@@ -100,10 +100,10 @@ func writeHttpFiles(files map[string]*models.HttpFile, outputDir string, formatt
 		}
 	} else {
 		// Write all requests to a single file
-		combinedFile := &models.HttpFile{
+		combinedFile := &models.HTTPFile{
 			BaseURL:    "",
 			GlobalVars: extractGlobalVars(files),
-			Requests:   []models.HttpRequest{},
+			Requests:   []models.HTTPRequest{},
 		}
 
 		// Collect all requests
@@ -129,7 +129,7 @@ func writeHttpFiles(files map[string]*models.HttpFile, outputDir string, formatt
 		}
 
 		// Format the file content
-		content := formatter.FormatHttpFile(combinedFile)
+		content := formatter.FormatHTTPFile(combinedFile)
 
 		// Write the file
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
@@ -145,7 +145,7 @@ func writeHttpFiles(files map[string]*models.HttpFile, outputDir string, formatt
 }
 
 // extractGlobalVars extracts global variables from all files
-func extractGlobalVars(files map[string]*models.HttpFile) map[string]string {
+func extractGlobalVars(files map[string]*models.HTTPFile) map[string]string {
 	vars := make(map[string]string)
 
 	// Collect all global variables

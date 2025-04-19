@@ -44,6 +44,10 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// Execute executes the root command.
+// We don't enforce this with cobra to allow for positional argument usage
+// Execute executes the root Cobra command.
+// It parses flags and runs the conversion if inputs are provided.
 func Execute() error {
 	return rootCmd.Execute()
 }
@@ -84,7 +88,7 @@ func run() error {
 	}
 
 	// This function will be implemented in another file
-	if err := convertSwaggerToHttp(inputFile, outputDir, baseURL, groupByTag, overwrite, verbose); err != nil {
+	if err := convertSwaggerToHTTP(inputFile, outputDir, baseURL, groupByTag, overwrite, verbose); err != nil {
 		return err
 	}
 

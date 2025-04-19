@@ -9,13 +9,13 @@ import (
 	"github.com/edgardnogueira/swagger-to-http-file/internal/domain/models"
 )
 
-// Generator implements the application.HttpGenerator interface
+// Generator implements the application.HTTPGenerator interface
 type Generator struct {
 	parser parser.SwaggerParser
 }
 
 // Generate creates HTTP files from a Swagger document
-func (g *Generator) Generate(doc *models.SwaggerDoc, baseURL string) (map[string]*models.HttpFile, error) {
+func (g *Generator) Generate(doc *models.SwaggerDoc, baseURL string) (map[string]*models.HTTPFile, error) {
 	if doc == nil {
 		return nil, fmt.Errorf("swagger document is nil")
 	}
@@ -27,35 +27,35 @@ func (g *Generator) Generate(doc *models.SwaggerDoc, baseURL string) (map[string
 	operations := g.parser.ExtractOperations(doc)
 
 	// Create HTTP files per tag
-	files := make(map[string]*models.HttpFile)
+	files := make(map[string]*models.HTTPFile)
 
 	for tag, ops := range operations {
-		httpFile := &models.HttpFile{
+		HTTPFile := &models.HTTPFile{
 			BaseURL:    baseURL,
 			GlobalVars: globalVars,
-			Requests:   []models.HttpRequest{},
+			Requests:   []models.HTTPRequest{},
 			Tag:        tag,
 		}
 
 		// Generate requests for each operation
 		for _, op := range ops {
 			request := g.GenerateRequest(op, baseURL)
-			httpFile.Requests = append(httpFile.Requests, request)
+			HTTPFile.Requests = append(HTTPFile.Requests, request)
 		}
 
-		files[tag] = httpFile
+		files[tag] = HTTPFile
 	}
 
 	return files, nil
 }
 
 // GenerateRequest creates a single HTTP request from an operation
-func (g *Generator) GenerateRequest(op models.OperationInfo, baseURL string) models.HttpRequest {
+func (g *Generator) GenerateRequest(op models.OperationInfo, baseURL string) models.HTTPRequest {
 	// Format path with parameters
 	path := g.FormatPath(op.Path, op.Parameters)
 
 	// Create request
-	request := models.HttpRequest{
+	request := models.HTTPRequest{
 		Name:        generateRequestName(op),
 		Method:      op.Method,
 		Path:        path,
