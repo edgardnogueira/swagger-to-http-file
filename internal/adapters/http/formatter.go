@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/edgardnogueira/swagger-to-http-file/internal/domain/models"
@@ -109,23 +110,26 @@ func (f *Formatter) formatNamedRequest(req models.HttpRequest) string {
 
 	return builder.String()
 }
-
-// getVarName converts a request name to a valid variable name
 func getVarName(name string) string {
-	// Replace spaces with underscores and remove special characters
-	varName := strings.ToLower(name)
-	varName = strings.ReplaceAll(varName, " ", "_")
-	varName = strings.ReplaceAll(varName, "-", "_")
+	// 1) normalize spaces & hyphens to underscores
+	s := strings.ReplaceAll(name, " ", "_")
+	s = strings.ReplaceAll(s, "-", "_")
 
-	// Remove any non-alphanumeric characters
+	// 2) insert underscore between a lowercase/digit and uppercase (camelCase boundary)
+	re := regexp.MustCompile(`([a-z0-9])([A-Z])`)
+	s = re.ReplaceAllString(s, `${1}_${2}`)
+
+	// 3) lowercase everything
+	s = strings.ToLower(s)
+
+	// 4) strip out any remaining non-alphanumeric/_, and ensure it doesn't start with a digit
 	var result strings.Builder
-	for i, char := range varName {
-		if (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char == '_' {
-			// First character must be a letter or underscore
-			if i == 0 && char >= '0' && char <= '9' {
+	for i, ch := range s {
+		if (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' {
+			if i == 0 && (ch >= '0' && ch <= '9') {
 				result.WriteRune('_')
 			}
-			result.WriteRune(char)
+			result.WriteRune(ch)
 		}
 	}
 

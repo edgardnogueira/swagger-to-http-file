@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -108,8 +109,23 @@ func dirExists(path string) bool {
 }
 
 // sanitizeFilename ensures a safe filename
+// sanitizeFilename ensures a safe filename by stripping any “..” or “.” segments
 func sanitizeFilename(name string) string {
-	// Replace problematic characters
-	name = filepath.Clean(name)
-	return name
+	// 1) clean the path lexically
+	cleaned := filepath.Clean(name)
+
+	// 2) split into path segments
+	parts := strings.Split(cleaned, string(filepath.Separator))
+
+	// 3) drop any “.”, “..” or empty segments
+	var safeParts []string
+	for _, p := range parts {
+		if p == "" || p == "." || p == ".." {
+			continue
+		}
+		safeParts = append(safeParts, p)
+	}
+
+	// 4) re-join into a sanitized path
+	return filepath.Join(safeParts...)
 }
