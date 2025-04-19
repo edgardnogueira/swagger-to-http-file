@@ -78,38 +78,41 @@ func (f *Formatter) formatGlobalVars(vars map[string]string) string {
 	return builder.String()
 }
 
+/*
 // formatNamedRequest formats a request with a name and response capture
-func (f *Formatter) formatNamedRequest(req models.HttpRequest) string {
-	var builder strings.Builder
 
-	// Add request name as a comment
-	builder.WriteString(fmt.Sprintf("### %s\n", req.Name))
+	func (f *Formatter) formatNamedRequest(req models.HttpRequest) string {
+		var builder strings.Builder
 
-	// Add request name for response capture
-	builder.WriteString(fmt.Sprintf("# @name %s\n", getVarName(req.Name)))
+		// Add request name as a comment
+		builder.WriteString(fmt.Sprintf("### %s\n", req.Name))
 
-	// Add description if present
-	if req.Description != "" {
-		builder.WriteString(fmt.Sprintf("# %s\n", req.Description))
+		// Add request name for response capture
+		builder.WriteString(fmt.Sprintf("# @name %s\n", getVarName(req.Name)))
+
+		// Add description if present
+		if req.Description != "" {
+			builder.WriteString(fmt.Sprintf("# %s\n", req.Description))
+		}
+
+		// Add method and URL
+		builder.WriteString(fmt.Sprintf("%s {{baseUrl}}%s\n", req.Method, req.Path))
+
+		// Add headers
+		for name, value := range req.Headers {
+			builder.WriteString(fmt.Sprintf("%s: %s\n", name, value))
+		}
+
+		// Add body if present
+		if req.Body != "" {
+			builder.WriteString("\n")
+			builder.WriteString(req.Body)
+			builder.WriteString("\n")
+		}
+
+		return builder.String()
 	}
-
-	// Add method and URL
-	builder.WriteString(fmt.Sprintf("%s {{baseUrl}}%s\n", req.Method, req.Path))
-
-	// Add headers
-	for name, value := range req.Headers {
-		builder.WriteString(fmt.Sprintf("%s: %s\n", name, value))
-	}
-
-	// Add body if present
-	if req.Body != "" {
-		builder.WriteString("\n")
-		builder.WriteString(req.Body)
-		builder.WriteString("\n")
-	}
-
-	return builder.String()
-}
+*/
 func getVarName(name string) string {
 	// 1) normalize spaces & hyphens to underscores
 	s := strings.ReplaceAll(name, " ", "_")

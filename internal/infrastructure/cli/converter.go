@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"path/filepath"
 	"strings"
@@ -19,7 +19,7 @@ func convertSwaggerToHttp(inputFile, outputDir, baseURLOverride string, groupByT
 		fmt.Printf("Reading Swagger file: %s\n", inputFile)
 	}
 
-	swaggerData, err := ioutil.ReadFile(inputFile)
+	swaggerData, err := os.ReadFile(inputFile)
 	if err != nil {
 		return fmt.Errorf("failed to read input file: %v", err)
 	}
@@ -90,7 +90,7 @@ func writeHttpFiles(files map[string]*models.HttpFile, outputDir string, formatt
 			content := formatter.FormatHttpFile(file)
 
 			// Write the file
-			if err := ioutil.WriteFile(fullPath, []byte(content), 0644); err != nil {
+			if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 				return fmt.Errorf("failed to write file %s: %v", fullPath, err)
 			}
 
@@ -132,7 +132,7 @@ func writeHttpFiles(files map[string]*models.HttpFile, outputDir string, formatt
 		content := formatter.FormatHttpFile(combinedFile)
 
 		// Write the file
-		if err := ioutil.WriteFile(fullPath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 			return fmt.Errorf("failed to write file %s: %v", fullPath, err)
 		}
 

@@ -140,7 +140,7 @@ func extractHeaders(op models.OperationInfo) map[string]string {
 	headers := make(map[string]string)
 
 	// Add Content-Type header based on consumes
-	if op.Operation.Consumes != nil && len(op.Operation.Consumes) > 0 {
+	if len(op.Operation.Consumes) > 0 {
 		headers["Content-Type"] = op.Operation.Consumes[0]
 	} else {
 		// Default to JSON for operations with request bodies
@@ -153,12 +153,12 @@ func extractHeaders(op models.OperationInfo) map[string]string {
 	}
 
 	// Add Accept header based on produces
-	if op.Operation.Produces != nil && len(op.Operation.Produces) > 0 {
+	if len(op.Operation.Produces) > 0 {
 		headers["Accept"] = op.Operation.Produces[0]
 	}
 
 	// Add Authorization header if security is defined
-	if op.Operation.Security != nil && len(op.Operation.Security) > 0 {
+	if len(op.Operation.Security) > 0 {
 		// Generic placeholder for auth token
 		headers["Authorization"] = "Bearer {{authToken}}"
 	}
@@ -311,7 +311,7 @@ func generateExampleValue(param models.Parameter) string {
 
 // getFirstTag gets the first tag of an operation or returns "default"
 func getFirstTag(op *models.Operation) string {
-	if op.Tags != nil && len(op.Tags) > 0 {
+	if len(op.Tags) > 0 {
 		return op.Tags[0]
 	}
 	return "default"

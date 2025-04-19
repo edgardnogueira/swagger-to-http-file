@@ -61,7 +61,7 @@ func (p *Parser) validatePaths(doc *models.SwaggerDoc) error {
 		if !strings.HasPrefix(path, "/") {
 			return fmt.Errorf("path %q must begin with a forward slash", path)
 		}
-		
+
 		if err := p.validatePathItem(path, &pathItem); err != nil {
 			return err
 		}
@@ -122,11 +122,11 @@ func (p *Parser) validateOperation(path, method string, op *models.Operation) er
 		if param.Name == "" {
 			return fmt.Errorf("parameter %d for %s %s has no name", i, method, path)
 		}
-		
+
 		if param.In == "" {
 			return fmt.Errorf("parameter '%s' for %s %s has no 'in' property", param.Name, method, path)
 		}
-		
+
 		// Path parameters must be required
 		if param.In == "path" && !param.Required {
 			return fmt.Errorf("path parameter '%s' for %s %s must be required", param.Name, method, path)
@@ -142,16 +142,16 @@ func (p *Parser) GetBaseURL(doc *models.SwaggerDoc) string {
 	if len(doc.Servers) > 0 && doc.Servers[0].URL != "" {
 		return doc.Servers[0].URL
 	}
-	
+
 	// For Swagger v2
-	if doc.Schemes != nil && len(doc.Schemes) > 0 {
+	if len(doc.Schemes) > 0 {
 		return fmt.Sprintf("%s://%s%s", doc.Schemes[0], doc.Host, doc.BasePath)
 	}
-	
+
 	if doc.Host != "" {
 		return fmt.Sprintf("http://%s%s", doc.Host, doc.BasePath)
 	}
-	
+
 	// Default fallback
 	return "http://localhost"
 }
@@ -159,7 +159,7 @@ func (p *Parser) GetBaseURL(doc *models.SwaggerDoc) string {
 // ExtractOperations extracts all operations from the Swagger document
 func (p *Parser) ExtractOperations(doc *models.SwaggerDoc) map[string][]models.OperationInfo {
 	operations := make(map[string][]models.OperationInfo)
-	
+
 	for path, pathItem := range doc.Paths {
 		p.addOperation(operations, path, "GET", pathItem.Get)
 		p.addOperation(operations, path, "POST", pathItem.Post)
@@ -169,7 +169,7 @@ func (p *Parser) ExtractOperations(doc *models.SwaggerDoc) map[string][]models.O
 		p.addOperation(operations, path, "HEAD", pathItem.Head)
 		p.addOperation(operations, path, "PATCH", pathItem.Patch)
 	}
-	
+
 	return operations
 }
 
@@ -178,20 +178,20 @@ func (p *Parser) addOperation(operations map[string][]models.OperationInfo, path
 	if op == nil {
 		return
 	}
-	
+
 	info := models.OperationInfo{
-		Path:        path,
-		Method:      method,
-		Operation:   op,
-		Parameters:  op.Parameters,
+		Path:       path,
+		Method:     method,
+		Operation:  op,
+		Parameters: op.Parameters,
 	}
-	
+
 	// Group by tag, or use "default" if no tags present
 	tags := op.Tags
 	if len(tags) == 0 {
 		tags = []string{"default"}
 	}
-	
+
 	for _, tag := range tags {
 		operations[tag] = append(operations[tag], info)
 	}
