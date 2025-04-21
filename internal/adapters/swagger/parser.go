@@ -33,15 +33,6 @@ func (p *Parser) Validate(doc *models.SwaggerDoc) error {
 		return errors.New("not a valid Swagger/OpenAPI document: missing 'swagger' or 'openapi' field")
 	}
 
-	// Validate required fields
-	if doc.Info.Title == "" {
-		return errors.New("info.title is required")
-	}
-
-	if doc.Info.Version == "" {
-		return errors.New("info.version is required")
-	}
-
 	// Check if there are any paths
 	if len(doc.Paths) == 0 {
 		return errors.New("no paths defined in the document")

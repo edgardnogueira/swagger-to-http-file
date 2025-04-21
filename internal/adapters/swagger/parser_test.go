@@ -133,6 +133,23 @@ func TestParser_Validate(t *testing.T) {
 		},
 	}
 
+	// Create a document with missing info fields
+	missingInfoFieldsDoc := &models.SwaggerDoc{
+		Swagger: "2.0",
+		Info:    models.Info{}, // Empty info
+		Paths: map[string]models.PathItem{
+			"/test": {
+				Get: &models.Operation{
+					Responses: map[string]models.Response{
+						"200": {
+							Description: "OK",
+						},
+					},
+				},
+			},
+		},
+	}
+
 	tests := []struct {
 		name    string
 		doc     *models.SwaggerDoc
@@ -167,6 +184,11 @@ func TestParser_Validate(t *testing.T) {
 			name:    "invalid path parameter - not required",
 			doc:     invalidPathParamDoc,
 			wantErr: true,
+		},
+		{
+			name:    "missing info fields",
+			doc:     missingInfoFieldsDoc,
+			wantErr: false, // Should NOT error anymore with our fix
 		},
 	}
 
@@ -250,28 +272,28 @@ func TestParser_ExtractOperations(t *testing.T) {
 
 	// Expected results
 	tests := []struct {
-		name             string
-		tag              string
-		expectedCount    int
-		containsPath     string
-		containsMethod   string
-		expectedContains bool
+		name              string
+		tag               string
+		expectedCount     int
+		containsPath      string
+		containsMethod    string
+		expectedContains  bool
 	}{
 		{
-			name:             "pets tag operations",
-			tag:              "pets",
-			expectedCount:    5, // GET /pets, POST /pets, GET /pets/{petId}, PUT /pets/{petId}, DELETE /pets/{petId}
-			containsPath:     "/pets",
-			containsMethod:   "GET",
-			expectedContains: true,
+			name:              "pets tag operations",
+			tag:               "pets",
+			expectedCount:     5, // GET /pets, POST /pets, GET /pets/{petId}, PUT /pets/{petId}, DELETE /pets/{petId}
+			containsPath:      "/pets",
+			containsMethod:    "GET",
+			expectedContains:  true,
 		},
 		{
-			name:             "non-existent tag",
-			tag:              "non-existent",
-			expectedCount:    0,
-			containsPath:     "",
-			containsMethod:   "",
-			expectedContains: false,
+			name:              "non-existent tag",
+			tag:               "non-existent",
+			expectedCount:     0,
+			containsPath:      "",
+			containsMethod:    "",
+			expectedContains:  false,
 		},
 	}
 
